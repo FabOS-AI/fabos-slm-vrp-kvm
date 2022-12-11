@@ -1,0 +1,3 @@
+- name: Uninstall packages (Ubuntu)
+  ansible.builtin.include_tasks: dist-specific/uninstall-ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'

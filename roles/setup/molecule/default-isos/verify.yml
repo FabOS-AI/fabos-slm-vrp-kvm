@@ -1,0 +1,19 @@
+- name: Verify - Install kvm
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Include defaults
+      ansible.builtin.include_vars:
+        file: ../../defaults/main.yml
+
+    - name: Get stat of iso file
+      ansible.builtin.stat:
+        path: "{{ iso_folder_abs_path }}/{{ item.key }}.{{ item.value.url | split('.') | last }}"
+      loop: "{{ iso | dict2items }}"
+      register: stats
+
+    - name: Assert stats
+      ansible.builtin.assert:
+        that: item.stat.exists
+      loop: "{{ stats.results }}"

@@ -1,0 +1,54 @@
+- name: Resize LVs of Ubuntu 18
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Resize LVs (lv_audit / lv_tmp)
+      when:
+        - ansible_distribution == 'Ubuntu'
+        - ansible_lsb.major_release == '18'
+      block:
+        - name: Unmount /var/log/audit
+          ansible.posix.mount:
+            path: /var/log/audit
+            state: unmounted
+
+        - name: Decrease size of LV lv_audit
+          community.general.lvol:
+            vg: sysvg
+            lv: lv_audit
+            size: 1G
+            force: true
+
+        - name: Create a xfs filesystem on /dev/sysvg/lv_audit
+          community.general.filesystem:
+            fstype: xfs
+            dev: /dev/sysvg/lv_audit
+            force: true
+
+        - name: Mount /var/log/audit
+          ansible.posix.mount:
+            path: /var/log/audit
+            src: /dev/sysvg/lv_audit
+            state: mounted
+            fstype: xfs
+          failed_when: false
+
+        - name: Resize the logical volume of lv_tmp on to +50% of free space of VG
+          community.general.lvol:
+            vg: sysvg
+            lv: lv_tmp
+            size: +50%FREE
+            resizefs: true
+            force: false
+
+        - name: Resize the logical volume of lv_var on to +100% of free space of VG
+          community.general.lvol:
+            vg: sysvg
+            lv: lv_var
+            size: +100%FREE
+            resizefs: true
+            force: false
+
+- name: Install KVM/QEMU
+  ansible.builtin.import_playbook: ../default-install/converge.yml

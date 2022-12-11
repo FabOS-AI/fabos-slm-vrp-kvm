@@ -1,0 +1,11 @@
+- name: Uninstall apt packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ apt_packages }}"
+
+- name: Uninstall pip packages
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ pip_packages }}"

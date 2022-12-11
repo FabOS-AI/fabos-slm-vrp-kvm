@@ -1,0 +1,32 @@
+---
+- name: Load defaults vars
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: include default vars of use role
+      ansible.builtin.include_vars:
+        file: ../../defaults/main.yml
+      delegate_facts: true
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['all'] }}"
+
+    - name: include default vars of setup role
+      ansible.builtin.include_vars:
+        file: ../../../setup/defaults/main.yml
+      delegate_facts: true
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['all'] }}"
+
+- name: Include prepare of download-iso
+  ansible.builtin.import_playbook: ../../../setup/molecule/default-isos/prepare.yml
+
+- name: Install and Download ISOs
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Download ISOs
+      ansible.builtin.include_role:
+        name: fabos.kvm.setup
+        tasks_from: download_isos.yml

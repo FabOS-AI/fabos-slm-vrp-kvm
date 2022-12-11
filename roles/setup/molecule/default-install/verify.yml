@@ -1,0 +1,16 @@
+- name: Verify - Install kvm
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Test virsh list
+      community.libvirt.virt:
+        command: list_vms
+      register: vms
+
+    - debug:
+        var: vms
+
+    - name: Assert virsh list not failed
+      ansible.builtin.assert:
+        that: not vms.failed

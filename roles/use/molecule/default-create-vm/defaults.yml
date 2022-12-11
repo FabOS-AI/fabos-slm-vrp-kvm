@@ -1,0 +1,13 @@
+vms:
+  - iso_key_name: "ubuntu_2204"
+    resource_id: "937788b1-e018-43c5-be29-e4523bcef5cd"
+    vm_vcpus: 1
+    vm_ram_mb: 2048
+  - iso_key_name: "ubuntu_2004"
+    resource_id: "ccb2dbc4-2aa8-43f8-b2f8-409bb6f07aa7"
+    vm_vcpus: 1
+    vm_ram_mb: 2048
+  - iso_key_name: "ubuntu_1804"
+    resource_id: "26f501d6-1f62-4ba6-870a-41084aec3089"
+    vm_vcpus: 1
+    vm_ram_mb: 2048

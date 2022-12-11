@@ -1,0 +1,73 @@
+- name: Assert Input vars
+  assert:
+    that:
+      - iso_key_name is defined and iso_key_name | length > 0
+      - resource_id is defined and resource_id | length > 0
+      - vm_ram_mb is defined
+      - vm_vcpus is defined
+
+- debug:
+    var: resource_id
+
+- name: Include setup role's default vars
+  ansible.builtin.include_vars:
+    file: ../../setup/defaults/main.yml
+
+- name: Get VMs list
+  community.libvirt.virt:
+    command: list_vms
+  register: existing_vms
+  changed_when: no
+
+- name: Set file name of src vm image
+  ansible.builtin.set_fact:
+    src_vm_image: "{{iso_folder_abs_path}}/{{iso_key_name}}.{{ url | split('.') | last }}"
+    dst_vm_image: "{{ libvirt_pool_dir }}/{{ resource_id }}.qcow2"
+    hostname: "{{ resource_id | split('-') | last }}"
+    virt_custom_cmd_ext: "{{ iso[iso_key_name].virt_customize }}"
+  vars:
+    url: "{{ iso[iso_key_name].url }}"
+
+- name: "Create folders"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ libvirt_pool_dir }}"
+    - "{{ config_files_folder_abs_path }}"
+
+- name: Copy Config files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - src: netplan-network.yaml.j2
+      dest: "{{ config_files_folder_abs_path }}/netplan-network.yaml"
+
+
+- name: "Copy VM Image \"{{src_vm_image}}\" file to {{ libvirt_pool_dir }}"
+  ansible.builtin.copy:
+    dest: "{{ dst_vm_image }}"
+    src: "{{ src_vm_image }}"
+    remote_src: true
+    force: false
+
+- name: "Configure VM \"{{dst_vm_image}}\""
+  ansible.builtin.command: "virt-customize -a {{ dst_vm_image }}  --hostname {{ hostname }}  --root-password password:password {{ virt_custom_cmd_ext }}"
+  when: resource_id not in existing_vms.list_vms
+
+- name: Define vm
+  community.libvirt.virt:
+    command: define
+    xml: "{{ lookup('template', 'vm-definition.xml.j2') }}"
+  vars:
+    vm_name: "{{ resource_id }}"
+
+- name: Ensure VMs are started
+  community.libvirt.virt:
+    name: "{{ resource_id }}"
+    state: running
+  register: vm_start_results
+  until: "vm_start_results is success"
+  retries: 15
+  delay: 2

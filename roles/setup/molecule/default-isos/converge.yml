@@ -1,0 +1,11 @@
+- name: Converge - Download ISOs kvm
+  hosts: all
+  gather_facts: yes
+  become: yes
+  collections:
+    - fabos.kvm
+  tasks:
+    - name: "Include fabos.kvm.setup - download ISOs"
+      include_role:
+        name: fabos.kvm.setup
+        tasks_from: download_isos.yml

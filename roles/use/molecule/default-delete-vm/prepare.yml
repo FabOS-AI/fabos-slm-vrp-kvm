@@ -1,0 +1,33 @@
+---
+- name: Include prepare of download-iso
+  ansible.builtin.import_playbook: ../default-create-vm/prepare.yml
+
+- name: Load defaults vars
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: include default vars of create-vm scenario
+      ansible.builtin.include_vars:
+        file: ../default-create-vm/defaults.yml
+      delegate_facts: true
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['all'] }}"
+
+- name: Install and Download ISOs
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Create VM
+      ansible.builtin.include_role:
+        name: fabos.kvm.use
+        tasks_from: create_vm.yml
+      loop: "{{ vms }}"
+      loop_control:
+        loop_var: vm
+      vars:
+        iso_key_name: "{{ vm.iso_key_name }}"
+        resource_id: "{{ vm.resource_id }}"
+        vm_vcpus: "{{ vm.vm_vcpus }}"
+        vm_ram_mb: "{{ vm.vm_ram_mb }}"

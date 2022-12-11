@@ -1,0 +1,18 @@
+- name: Verify - Create VM
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Get VMs list
+      community.libvirt.virt:
+        command: list_vms
+      register: existing_vms
+      changed_when: no
+
+    - name: Print VM list
+      debug:
+        var: existing_vms
+
+    - assert:
+        that:
+          - existing_vms.list_vms is defined and existing_vms.list_vms | length == 0

@@ -1,0 +1,4 @@
+---
+# defaults file for use
+libvirt_pool_dir: "/var/lib/libvirt/images"
+config_files_folder_abs_path: "/tmp/kvm_config_files"

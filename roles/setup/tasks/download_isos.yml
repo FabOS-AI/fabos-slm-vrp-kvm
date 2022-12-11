@@ -1,0 +1,16 @@
+- name: Create base folder for VM ISOs
+  ansible.builtin.file:
+    path: "{{ iso_folder_abs_path }}"
+    state: directory
+    mode: '0755'
+
+- name: "Download base image to folder: {{ iso_folder_abs_path }}"
+  ansible.builtin.get_url:
+    url: "{{ item.value.url }}"
+    dest: "{{ iso_folder_abs_path }}/{{ item.key }}.{{ item.value.url | split('.') | last }}"
+  loop: "{{ iso | dict2items }}"
+
+- name: "Resize disk image"
+  ansible.builtin.include_tasks: helper/resize_disk_image.yml
+  loop: "{{ iso | dict2items }}"
+

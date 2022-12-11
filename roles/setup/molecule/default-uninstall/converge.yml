@@ -1,0 +1,11 @@
+- name: Converge - Uninstall kvm
+  hosts: all
+  gather_facts: yes
+  become: yes
+  collections:
+    - fabos.kvm
+  tasks:
+    - name: "Include fabos.kvm.setup - uninstall"
+      include_role:
+        name: fabos.kvm.setup
+        tasks_from: uninstall.yml

@@ -1,0 +1,17 @@
+- name: Verify - Install kvm
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Test virsh list
+      community.libvirt.virt:
+        command: list_vms
+      failed_when: false
+      register: vms
+
+    - debug:
+        var: vms
+
+    - name: Assert virsh list not failed
+      ansible.builtin.assert:
+        that: "'Failed to connect' in vms.msg or 'is not importable' in vms.msg"

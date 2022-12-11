@@ -1,0 +1,30 @@
+- name: Get disk size of image
+  command: "qemu-img info {{ iso_folder_abs_path }}/{{ item.key }}.{{ item.value.url | split('.') | last }}"
+  register: disk_size
+  changed_when: false
+
+- name: Split virtual size line by ' '
+  set_fact:
+    stdout_split: "{{ disk_size.stdout_lines[2] | split(' ') }}"
+
+- name: Process String with 'GiB'
+  when: "'GiB' in disk_size.stdout_lines[2]"
+  set_fact:
+    image_size: "{{ stdout_split[2] }}"
+    image_size_unit: "{{ stdout_split[3] }}"
+
+- name: Process String with 'G'
+  when:
+    -  "not 'GiB' in disk_size.stdout_lines[2]"
+    - "'G' in disk_size.stdout_lines[2]"
+  set_fact:
+    image_size: "{{ stdout_split[2][0:-1] }}"
+    image_size_unit: "{{ stdout_split[2][-1:] }}"
+
+- name: Print virtual image size
+  debug:
+    msg: "{{ image_size }} {{ image_size_unit }}"
+
+- name: Resize image
+  command: "qemu-img resize {{ iso_folder_abs_path }}/{{ item.key }}.{{ item.value.url | split('.') | last }} 5G"
+  when: (image_size_unit != 'GiB' and  image_size_unit != 'G') or (image_size | int) < 5
