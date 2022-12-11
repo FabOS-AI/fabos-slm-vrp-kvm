@@ -1,0 +1,21 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: delegated
+platforms:
+  - name: ubuntu2204
+    template_name: ubuntu-22-04
+    vm_num_cpus: 8
+    vm_num_cpu_cores_per_socket: 4
+    vm_memory_mb: 16384
+provisioner:
+  name: ansible
+  playbooks:
+    create: ../../../setup/molecule/default/create.yml
+    destroy: ../../../setup/molecule/default/destroy.yml
+    prepare: ../default-delete-vm/prepare.yml
+    converge: ../default-delete-vm/converge.yml
+    verify: ../default-delete-vm/verify.yml
+verifier:
+  name: ansible
