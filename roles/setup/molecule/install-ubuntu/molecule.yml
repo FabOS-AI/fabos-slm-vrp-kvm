@@ -6,10 +6,19 @@ driver:
 platforms:
   - name: ubuntu2204
     template_name: ubuntu-22-04
+    vm_num_cpus: 8
+    vm_num_cpu_cores_per_socket: 4
+    vm_memory_mb: 16384
   - name: ubuntu2004
     template_name: ubuntu-20-04
+    vm_num_cpus: 8
+    vm_num_cpu_cores_per_socket: 4
+    vm_memory_mb: 16384
   - name: ubuntu1804
     template_name: ubuntu-18-04
+    vm_num_cpus: 8
+    vm_num_cpu_cores_per_socket: 4
+    vm_memory_mb: 16384
 provisioner:
   name: ansible
   playbooks:
